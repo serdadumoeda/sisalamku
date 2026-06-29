@@ -60,6 +60,7 @@ Route::get('/run-migrations-securely', function () {
         }
         return "Success:<br>" . nl2br($output);
     } catch (\Exception $e) {
+        $output = \Illuminate\Support\Facades\Artisan::output();
         $envKeys = [];
         $allEnv = array_merge($_ENV, $_SERVER, getenv());
         ksort($allEnv);
@@ -69,6 +70,6 @@ Route::get('/run-migrations-securely', function () {
                 $envKeys[] = "$key = $masked";
             }
         }
-        return "Failed: " . $e->getMessage() . "<br><br><b>Environment Variables (Filtered & Masked):</b><br>" . implode('<br>', $envKeys);
+        return "Failed: " . $e->getMessage() . "<br><br><b>Artisan Output:</b><br>" . nl2br($output) . "<br><br><b>Environment Variables (Filtered & Masked):</b><br>" . implode('<br>', $envKeys);
     }
 });
