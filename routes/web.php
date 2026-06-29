@@ -50,6 +50,17 @@ Route::get('/run-migrations-securely', function () {
     if (request('token') !== env('MIGRATION_TOKEN', 'some-default-secure-token')) {
         abort(403, 'Unauthorized');
     }
+    $queries = [];
+    \Illuminate\Support\Facades\DB::listen(function ($query) use (&$queries) {
+        // Render SQL with bindings replaced for readability
+        $sql = $query->sql;
+        foreach ($query->bindings as $binding) {
+            $value = is_numeric($binding) ? $binding : "'".addslashes($binding)."'";
+            $sql = preg_replace('/\?/', $value, $sql, 1);
+        }
+        $queries[] = $sql;
+    });
+
     try {
         $command = request('fresh') === 'true' ? 'migrate:fresh' : 'migrate';
         \Illuminate\Support\Facades\Artisan::call($command, ['--force' => true]);
@@ -70,7 +81,7 @@ Route::get('/run-migrations-securely', function () {
                 $envKeys[] = "$key = $masked";
             }
         }
-        return "Failed: " . $e->getMessage() . "<br><br><b>Artisan Output:</b><br>" . nl2br($output) . "<br><br><b>Environment Variables (Filtered & Masked):</b><br>" . implode('<br>', $envKeys);
+        return "Failed: " . $e->getMessage() . "<br><br><b>Artisan Output:</b><br>" . nl2br($output) . "<br><br><b>SQL Queries Executed:</b><br><pre>" . implode("\n", $queries) . "</pre><br><b>Environment Variables (Filtered & Masked):</b><br>" . implode('<br>', $envKeys);
     }
 });
 
