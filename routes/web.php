@@ -51,7 +51,8 @@ Route::get('/run-migrations-securely', function () {
         abort(403, 'Unauthorized');
     }
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $command = request('fresh') === 'true' ? 'migrate:fresh' : 'migrate';
+        \Illuminate\Support\Facades\Artisan::call($command, ['--force' => true]);
         $output = \Illuminate\Support\Facades\Artisan::output();
         if (request('seed') === 'true') {
             \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
