@@ -1,0 +1,179 @@
+{{-- File: resources/views/pengajuan/create.blade.php --}}
+@extends('layouts.app')
+
+@section('title', 'Buat Pengajuan')
+
+@section('content')
+    <div class="card card-custom p-5 bg-white border-0">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-dark mb-1">Form Pengajuan Pembayaran</h3>
+                <p class="text-muted mb-0 small">Masukkan detail dokumen pengajuan SPJ</p>
+            </div>
+            <a href="{{ route('pengajuan.index') }}" class="btn btn-secondary btn-sm rounded-pill px-4">
+                <i class="bi bi-arrow-left"></i> Kembali
+            </a>
+        </div>
+        <hr class="text-muted opacity-25">
+
+        {{-- Menampilkan error validasi --}}
+        @if ($errors->any())
+            <div class="alert alert-danger shadow-sm rounded-3">
+                <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Terdapat kesalahan pengisian form:</h6>
+                <ul class="mb-0 small">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form action="{{ route('pengajuan.store') }}" method="POST">
+            @csrf
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Nomor Pengajuan (Otomatis)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted border-0 shadow-sm"><i class="bi bi-tag-fill"></i></span>
+                        <input type="text" name="no_pengajuan" class="form-control border-0 bg-light shadow-sm" value="{{ $noPengajuanBaru }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Bidang</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted border-0 shadow-sm"><i class="bi bi-building"></i></span>
+                        <input type="text" class="form-control border-0 bg-light shadow-sm" value="{{ Auth::user()->bidang }}" readonly>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Nama Kegiatan</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted border-0 shadow-sm"><i class="bi bi-card-text"></i></span>
+                        <input type="text" name="nama_kegiatan" class="form-control border-0 shadow-sm" value="{{ old('nama_kegiatan') }}" placeholder="Contoh: Honorarium Narasumber Peningkatan Mutu" required>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Nomor Akun</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted border-0 shadow-sm"><i class="bi bi-hash"></i></span>
+                        <input type="text" name="no_akun" class="form-control border-0 shadow-sm" value="{{ old('no_akun') }}" placeholder="Contoh: 521211" required>
+                    </div>
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Jenis Belanja</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted border-0 shadow-sm"><i class="bi bi-cart3"></i></span>
+                        <select name="jenis_belanja" class="form-select border-0 shadow-sm" required>
+                            <option value="Honorarium" {{ old('jenis_belanja') == 'Honorarium' ? 'selected' : '' }}>Honorarium</option>
+                            <option value="Pembayaran Uang Saku Peserta" {{ old('jenis_belanja') == 'Pembayaran Uang Saku Peserta' ? 'selected' : '' }}>Pembayaran Uang Saku Peserta</option>
+                            <option value="Pengadaan Barang" {{ old('jenis_belanja') == 'Pengadaan Barang' ? 'selected' : '' }}>Pengadaan Barang</option>
+                            <option value="Pemeliharaan" {{ old('jenis_belanja') == 'Pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
+                            <option value="Lainnya" {{ old('jenis_belanja') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Kategori Pengajuan</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted border-0 shadow-sm"><i class="bi bi-tags-fill"></i></span>
+                        <select name="kategori_pengajuan" class="form-select border-0 shadow-sm" required>
+                            <option value="" disabled selected>-- Pilih Kategori Pengajuan --</option>
+                            <option value="GU/UP/TUP" {{ old('kategori_pengajuan') == 'GU/UP/TUP' ? 'selected' : '' }}>GU/UP/TUP</option>
+                            <option value="LS Kontrak" {{ old('kategori_pengajuan') == 'LS Kontrak' ? 'selected' : '' }}>LS Kontrak</option>
+                            <option value="LS Non Kontrak" {{ old('kategori_pengajuan') == 'LS Non Kontrak' ? 'selected' : '' }}>LS Non Kontrak</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Nilai Bruto (Rp)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted border-0 shadow-sm">Rp</span>
+                        <input type="number" name="nilai_bruto" id="nilai_bruto" class="form-control border-0 shadow-sm" value="{{ old('nilai_bruto') }}" placeholder="0" required>
+                    </div>
+                    <div id="helper_nilai_bruto" class="form-text text-success fw-semibold small mt-1"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Nilai Neto (Rp)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted border-0 shadow-sm">Rp</span>
+                        <input type="number" name="nilai_neto" id="nilai_neto" class="form-control border-0 shadow-sm" value="{{ old('nilai_neto') }}" placeholder="0" required>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <div id="helper_nilai_neto" class="form-text text-success fw-semibold small"></div>
+                        <small class="text-primary"><i class="bi bi-calculator"></i> Bingung hitung pajak? <a href="https://kalkulator.pajak.go.id/" target="_blank" class="text-decoration-none">Buka Kalkulator Pajak DJP</a></small>
+                    </div>
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Uraian Pembayaran</label>
+                    <textarea name="uraian_pembayaran" class="form-control border-0 shadow-sm" rows="3" placeholder="Masukkan uraian detail pembayaran..." required>{{ old('uraian_pembayaran') }}</textarea>
+                </div>
+
+                <div class="col-md-12 mb-4 bg-light p-4 rounded border border-light-subtle shadow-sm">
+                    <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-link-45deg"></i> Link Google Drive</h5>
+                    <p class="text-muted small mb-3">Masukkan link Google Drive berkas dokumen pendukung asli:</p>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted border-0 shadow-sm"><i class="bi bi-google"></i></span>
+                        <input type="url" name="link_google_drive" class="form-control border-0 shadow-sm" placeholder="Contoh: https://drive.google.com/..." value="{{ old('link_google_drive') }}" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" name="action" value="draft" class="btn btn-secondary rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-save"></i> Simpan Draft
+                </button>
+                <button type="submit" name="action" value="ajukan" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-send-fill"></i> Ajukan ke Keuangan
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Script Form Helper -->
+    <script>
+        function formatRupiah(angka) {
+            if (!angka || isNaN(angka)) return '';
+            var number_string = angka.toString().replace(/[^,\d]/g, ''),
+                split = number_string.split(','),
+                sisa = split[0].length % 3,
+                rupiah = split[0].substr(0, sisa),
+                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return rupiah ? 'Format: Rp ' + rupiah : '';
+        }
+
+        const brutoInput = document.getElementById('nilai_bruto');
+        const netoInput = document.getElementById('nilai_neto');
+
+        brutoInput.addEventListener('input', function() {
+            document.getElementById('helper_nilai_bruto').innerText = formatRupiah(this.value);
+        });
+
+        netoInput.addEventListener('input', function() {
+            document.getElementById('helper_nilai_neto').innerText = formatRupiah(this.value);
+        });
+
+        // Trigger on load if filled
+        if (brutoInput.value) {
+            document.getElementById('helper_nilai_bruto').innerText = formatRupiah(brutoInput.value);
+        }
+        if (netoInput.value) {
+            document.getElementById('helper_nilai_neto').innerText = formatRupiah(netoInput.value);
+        }
+    </script>
+@endsection
