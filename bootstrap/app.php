@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => \App\Http\Middleware::class, // Jika di Laravel 11
+            'role' => \App\Http\Middleware\CheckRole::class, // Jika di Laravel 11
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
