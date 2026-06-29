@@ -23,17 +23,31 @@ try {
         \Illuminate\Contracts\Debug\ExceptionHandler::class,
         function ($app) {
             return new class($app) extends \Illuminate\Foundation\Exceptions\Handler {
-                public function render($request, Throwable $e) {
-                    header('HTTP/1.1 500 Internal Server Error');
-                    echo "<h1>Original Exception Intercepted!</h1>";
-                    echo "<h3>Exception Type:</h3>";
-                    echo "<pre>" . htmlspecialchars(get_class($e)) . "</pre>";
-                    echo "<h3>Error Message:</h3>";
-                    echo "<pre style='background:#f8f9fa; padding:15px; border:1px solid #ced4da; overflow:auto;'>" . htmlspecialchars($e->getMessage()) . "</pre>";
-                    echo "<h3>Stack Trace:</h3>";
-                    echo "<pre style='background:#f8f9fa; padding:15px; border:1px solid #ced4da; overflow:auto;'>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
-                    exit;
+            public function render($request, Throwable $e) {
+                header('HTTP/1.1 500 Internal Server Error');
+                echo "<h1>Original Exception Intercepted!</h1>";
+                echo "<h3>Exception Type:</h3>";
+                echo "<pre>" . htmlspecialchars(get_class($e)) . "</pre>";
+                echo "<h3>Error Message:</h3>";
+                echo "<pre style='background:#f8f9fa; padding:15px; border:1px solid #ced4da; overflow:auto;'>" . htmlspecialchars($e->getMessage()) . "</pre>";
+                
+                echo "<h3>Environment Variables (Filtered & Masked):</h3>";
+                echo "<pre style='background:#f8f9fa; padding:15px; border:1px solid #ced4da; overflow:auto;'>";
+                // Merge $_ENV and getenv() to be sure we capture everything
+                $allEnv = array_merge($_ENV, $_SERVER, getenv());
+                ksort($allEnv);
+                foreach ($allEnv as $key => $val) {
+                    if (is_string($val) && (str_contains($key, 'POSTGRES') || str_contains($key, 'DB') || str_contains($key, 'APP'))) {
+                        $masked = ($val === '') ? '[empty]' : (strlen($val) > 8 ? substr($val, 0, 4) . '...' . substr($val, -4) : '***');
+                        echo htmlspecialchars($key) . " = " . htmlspecialchars($masked) . "\n";
+                    }
                 }
+                echo "</pre>";
+
+                echo "<h3>Stack Trace:</h3>";
+                echo "<pre style='background:#f8f9fa; padding:15px; border:1px solid #ced4da; overflow:auto;'>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
+                exit;
+            }
             };
         }
     );
