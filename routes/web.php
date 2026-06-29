@@ -59,6 +59,15 @@ Route::get('/run-migrations-securely', function () {
         }
         return "Success:<br>" . nl2br($output);
     } catch (\Exception $e) {
-        return "Failed: " . $e->getMessage();
+        $envKeys = [];
+        $allEnv = array_merge($_ENV, $_SERVER, getenv());
+        ksort($allEnv);
+        foreach ($allEnv as $key => $val) {
+            if (is_string($val) && (str_contains($key, 'POSTGRES') || str_contains($key, 'DB') || str_contains($key, 'APP'))) {
+                $masked = ($val === '') ? '[empty]' : (strlen($val) > 8 ? substr($val, 0, 4) . '...' . substr($val, -4) : '***');
+                $envKeys[] = "$key = $masked";
+            }
+        }
+        return "Failed: " . $e->getMessage() . "<br><br><b>Environment Variables (Filtered & Masked):</b><br>" . implode('<br>', $envKeys);
     }
 });
