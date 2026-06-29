@@ -73,3 +73,23 @@ Route::get('/run-migrations-securely', function () {
         return "Failed: " . $e->getMessage() . "<br><br><b>Artisan Output:</b><br>" . nl2br($output) . "<br><br><b>Environment Variables (Filtered & Masked):</b><br>" . implode('<br>', $envKeys);
     }
 });
+
+// --- RUTE SEMENTARA UNTUK DEBUGGING MIGRATION USERS ---
+Route::get('/test-postgres-users', function () {
+    try {
+        \Illuminate\Support\Facades\Schema::dropIfExists('users');
+        $db = \Illuminate\Support\Facades\DB::connection()->getPdo();
+        
+        $sql = 'create table "users" ("id" bigserial primary key not null, "name" varchar(255) not null, "email" varchar(255) not null, "email_verified_at" timestamp(0) without time zone null, "password" varchar(255) not null, "role" varchar(255) check ("role" in (\'Admin Keuangan\', \'Operator Bidang\', \'Verifikator Keuangan\', \'PPK\', \'Operator Pembayaran\', \'Bendahara\')) not null, "bidang" varchar(100) default \'None\' not null, "remember_token" varchar(100) null, "created_at" timestamp(0) without time zone null, "updated_at" timestamp(0) without time zone null)';
+        $db->exec($sql);
+        echo "CREATE TABLE users: SUCCESS<br>";
+        
+        $sql2 = 'alter table "users" add constraint "users_email_unique" unique ("email")';
+        $db->exec($sql2);
+        echo "ALTER TABLE add unique: SUCCESS<br>";
+        
+        return "All tests passed!";
+    } catch (\Throwable $e) {
+        return "Failed: " . $e->getMessage() . "<br><pre>" . $e->getTraceAsString() . "</pre>";
+    }
+});
