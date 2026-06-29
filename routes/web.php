@@ -44,3 +44,21 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     Route::post('/notifications/{id}/read', [DashboardController::class, 'markNotificationAsRead'])->name('notifications.read');
 });
+
+// --- RUTE UNTUK RUN MIGRATIONS SECURELY DI VERCEL ---
+Route::get('/run-migrations-securely', function () {
+    if (request('token') !== env('MIGRATION_TOKEN', 'some-default-secure-token')) {
+        abort(403, 'Unauthorized');
+    }
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        if (request('seed') === 'true') {
+            \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+            $output .= "\n" . \Illuminate\Support\Facades\Artisan::output();
+        }
+        return "Success:<br>" . nl2br($output);
+    } catch (\Exception $e) {
+        return "Failed: " . $e->getMessage();
+    }
+});
