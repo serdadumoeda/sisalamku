@@ -78,6 +78,8 @@ Route::get('/run-migrations-securely', function () {
 Route::get('/test-postgres-users', function () {
     try {
         \Illuminate\Support\Facades\Schema::dropIfExists('users');
+        \Illuminate\Support\Facades\Schema::dropIfExists('password_reset_tokens');
+        \Illuminate\Support\Facades\Schema::dropIfExists('sessions');
         $db = \Illuminate\Support\Facades\DB::connection()->getPdo();
         
         $sql = 'create table "users" ("id" bigserial primary key not null, "name" varchar(255) not null, "email" varchar(255) not null, "email_verified_at" timestamp(0) without time zone null, "password" varchar(255) not null, "role" varchar(255) check ("role" in (\'Admin Keuangan\', \'Operator Bidang\', \'Verifikator Keuangan\', \'PPK\', \'Operator Pembayaran\', \'Bendahara\')) not null, "bidang" varchar(100) default \'None\' not null, "remember_token" varchar(100) null, "created_at" timestamp(0) without time zone null, "updated_at" timestamp(0) without time zone null)';
@@ -87,6 +89,22 @@ Route::get('/test-postgres-users', function () {
         $sql2 = 'alter table "users" add constraint "users_email_unique" unique ("email")';
         $db->exec($sql2);
         echo "ALTER TABLE add unique: SUCCESS<br>";
+
+        $sql3 = 'create table "password_reset_tokens" ("email" varchar(255) primary key not null, "token" varchar(255) not null, "created_at" timestamp(0) without time zone null)';
+        $db->exec($sql3);
+        echo "CREATE TABLE password_reset_tokens: SUCCESS<br>";
+
+        $sql4 = 'create table "sessions" ("id" varchar(255) primary key not null, "user_id" bigint null, "ip_address" varchar(45) null, "user_agent" text null, "payload" text not null, "last_activity" integer not null)';
+        $db->exec($sql4);
+        echo "CREATE TABLE sessions: SUCCESS<br>";
+
+        $sql5 = 'create index "sessions_user_id_index" on "sessions" ("user_id")';
+        $db->exec($sql5);
+        echo "CREATE INDEX sessions_user_id: SUCCESS<br>";
+
+        $sql6 = 'create index "sessions_last_activity_index" on "sessions" ("last_activity")';
+        $db->exec($sql6);
+        echo "CREATE INDEX sessions_last_activity: SUCCESS<br>";
         
         return "All tests passed!";
     } catch (\Throwable $e) {
